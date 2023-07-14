@@ -6,8 +6,8 @@ from model.Note import Note
 
 
 class Model:
-    __NOTES_DIR = "MyNotes"
-    __DATAFILE_PATH = "MyNotes\\MyNotes.notes"
+    __NOTES_DIR: str = "MyNotes"
+    __DATAFILE_PATH: str = "MyNotes\\MyNotes.notes"
 
     def __init__(self):
         try:
@@ -15,14 +15,14 @@ class Model:
         except FileExistsError:
             pass
 
-        self.__serviceID = ServiceID()
-        self.__cache: dict[Note] = {}
+        self.__serviceID: ServiceID = ServiceID()
+        self.__cache: dict[int, Note] = {}
 
         try:
             with open(self.__DATAFILE_PATH, "r") as file:
-                dict_notes: dict[dict] = load(file)
+                dict_notes: dict[str, dict] = load(file)
             for id in dict_notes:
-                self.__cache[id] = Note.from_dict(dict_notes[id])
+                self.__cache[int(id)] = Note.from_dict(dict_notes[id])
         except FileNotFoundError:
             with open(self.__DATAFILE_PATH, "w") as file:
                 file.write("{}")
@@ -38,30 +38,41 @@ class Model:
         except FileNotFoundError:
             return 1
 
-    def get_all_notes(self) -> dict[Note]:
+    def get_all_notes(self) -> dict[int, Note]:
         return self.__cache
 
-    def find_note(self, find_text: str) -> list[Note]:
-        result: list[Note] = []
+    def find_note(self, find_text: str) -> dict[int, Note]:
+        result: dict[int, Note] = {}
         for id in self.__cache:
             note: Note = self.__cache[id]
             note_content: str = f"{note.get_head()} {note.get_text()}"
             if find_text in note_content:
-                result.append(note)
+                result[id] = note
         return result
 
     def edit_note_by_id(self, id: int, field: str, change: str) -> int:
         note: Note = self.get_note_by_id(id)
         if not (note is None):
             note.edit(field=field, new_content=change, change_timestamp=time())
+            self.save_cache()
             return 0
         return 1
+
+    def check_field(self, field: str) -> bool:
+        if field in Note.get_changeable_fields():
+            return True
+        return False
 
     def get_note_by_id(self, id: int) -> Note:
         try:
             return self.__cache[id]
         except KeyError:
             return None
+
+    def check_id(self, id: int) -> bool:
+        if id in self.__cache:
+            return True
+        return False
 
     def del_note_by_id(self, id: int) -> int:
         try:
