@@ -1,4 +1,10 @@
 class Note:
+    __CHANGEABLE_FIELDS: tuple[str, ...] = ("1", "2")
+
+    @classmethod
+    def get_changeable_fields(cls) -> tuple[str, ...]:
+        return cls.__CHANGEABLE_FIELDS
+
     @staticmethod
     def from_dict(dict_note: dict):
         return Note(id=dict_note["id"],
@@ -17,7 +23,10 @@ class Note:
         self.__created_timestamp: int = int(created_timestamp)
         self.__head: str = head
         self.__text: str = text
-        self.__last_change_timestamp: int = int(last_change_timestamp)
+        if last_change_timestamp is None:
+            self.__last_change_timestamp: int = int(created_timestamp)
+        else:
+            self.__last_change_timestamp = int(last_change_timestamp)
 
     def __dict__(self) -> dict:
         return {"id": self.__id,
