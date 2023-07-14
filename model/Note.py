@@ -42,11 +42,11 @@ class Note:
         return self.__text
 
     def edit(self,
-             place: str,
+             field: str,
              new_content: str,
              change_timestamp: float) -> None:
-        if place == "1":
+        if field == "1":
             self.__head = new_content
-        elif place == "2":
+        elif field == "2":
             self.__text = new_content
         self.__last_change_timestamp = int(change_timestamp)

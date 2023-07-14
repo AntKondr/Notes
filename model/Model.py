@@ -27,14 +27,12 @@ class Model:
             with open(self.__DATAFILE_PATH, "w") as file:
                 file.write("{}")
 
-    def add_new_note(self,
-                     head: str,
-                     text: str) -> int:
+    def add_new_note(self, head: str, text: str) -> int:
         try:
-            id = self.__serviceID.get_new_id()
-            created_timestamp = time()
-            note = Note(id, created_timestamp, head, text)
-            self.__cache[id] = note
+            id: int = self.__serviceID.get_new_id()
+            created_timestamp: float = time()
+            note: Note = Note(id, created_timestamp, head, text)
+            self.__cache[id]: Note = note
             self.save_cache()
             return 0
         except FileNotFoundError:
@@ -46,14 +44,18 @@ class Model:
     def find_note(self, find_text: str) -> list[Note]:
         result: list[Note] = []
         for id in self.__cache:
-            note = self.__cache[id]
-            note_content = f"{note.get_head()} {note.get_text()}"
+            note: Note = self.__cache[id]
+            note_content: str = f"{note.get_head()} {note.get_text()}"
             if find_text in note_content:
                 result.append(note)
         return result
 
-    def edit_note_by_id(id: str, what: str, change: str) -> str:
-        pass
+    def edit_note_by_id(self, id: int, field: str, change: str) -> int:
+        note: Note = self.get_note_by_id(id)
+        if not (note is None):
+            note.edit(field=field, new_content=change, change_timestamp=time())
+            return 0
+        return 1
 
     def get_note_by_id(self, id: int) -> Note:
         try:
@@ -65,15 +67,16 @@ class Model:
         try:
             del self.__cache[id]
             self.save_cache()
+            self.__serviceID.add_free_id(id)
             return 0
         except KeyError:
             return 1
 
     def save_cache(self) -> int:
         try:
-            dict_notes = {}
+            dict_notes: dict = {}
             for id in self.__cache:
-                dict_notes[id] = self.__cache[id].__dict__()
+                dict_notes[id]: dict = self.__cache[id].__dict__()
             with open(self.__DATAFILE_PATH, "w", encoding="utf-8") as file:
                 dump(dict_notes, file)
             return 0
