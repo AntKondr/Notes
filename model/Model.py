@@ -1,29 +1,51 @@
+from json import load, dump
+from os import mkdir
+from time import time
+from model.ServiceID import ServiceID
 from model.Note import Note
 
 
 class Model:
-    DATAFILE_PATH = "MyNotes\\Notes.data"
-    FREE_IDS = "MyNotes\\system\\free_ids"
-    LAST_ID = "MyNotes\\system\\last_id"
+    __NOTES_DIR = "MyNotes"
+    __DATAFILE_PATH = "MyNotes\\MyNotes.notes"
 
-    cache: list[Note] = []
+    def __init__(self):
+        try:
+            mkdir(self.__NOTES_DIR)
+        except FileExistsError:
+            pass
 
-    def create_note_obj(self,
-                        id: int,
-                        created_timestamp: int,
-                        head: str,
-                        text: str) -> Note:
-        note = Note(id, created_timestamp, head, text)
-        return note
+        self.__serviceID = ServiceID()
+        self.__cache: list[Note] = []
 
-    def add_new_note() -> bool:
-        pass
+        try:
+            with open(self.__DATAFILE_PATH, "r") as file:
+                dict_notes: list[dict] = load(file)
+            for d in dict_notes:
+                self.__cache.append(Note.from_dict(d))
+        except FileNotFoundError:
+            with open(self.__DATAFILE_PATH, "w") as file:
+                file.write("[]")
 
-    def get_all_notes() -> list[Note]:
-        pass
+    def add_new_note(self,
+                     head: str,
+                     text: str) -> bool:
+        try:
+            id = self.__serviceID.get_new_id()
+            created_timestamp = time()
+            note = Note(id, created_timestamp, head, text)
+            self.__cache.append(note)
+            self.save_cache()
+            return True
+        except:
+            return False
 
-    def find_note(find: str) -> list:
-        pass
+    def get_all_notes(self) -> list[Note]:
+        return self.__cache
+
+    def find_note(self, find: str) -> list[Note]:
+        for note in self.__cache:
+            pass
 
     def edit_note_by_id(id: str, what: str, change: str) -> str:
         pass
@@ -33,3 +55,10 @@ class Model:
 
     def get_note_by_id(id: str) -> Note:
         pass
+
+    def save_cache(self) -> None:
+        dict_notes = []
+        for note in self.__cache:
+            dict_notes.append(note.__dict__())
+        with open(self.__DATAFILE_PATH, "w", encoding="utf-8") as file:
+            dump(dict_notes, file)

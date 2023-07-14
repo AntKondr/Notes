@@ -5,9 +5,11 @@ from model.Note import Note
 class ConsoleUI:
     __date_format: str = "%d.%m.%Y %H:%M"
 
-    def show_hello(self) -> None:
-        print("Приложение Заметки запущено.\n"
-              "введите команду help для просмотра справки.")
+    def wellcome(self) -> None:
+        print("Приложение Заметки запущено.\n",
+              "Введите команду help для просмотра справки.\n",
+              "Введите команду: ",
+              end="", sep="")
 
     def show_main_menu(self) -> None:
         print("1 - Показать все заметки\n"
